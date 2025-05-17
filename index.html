@@ -12,15 +12,17 @@
 <body>
   <h1>Toca Aí 🎶</h1>
   <p>Escute o trecho e adivinhe o nome da música!</p>
+  <p id="pontuacao">Acertos: 0/0 pontos</p>
 
   <button id="play">▶️ Play</button>
   <button id="pause">⏸️ Pause</button>
   <button id="previous">⏮️ Anterior</button>
   <button id="next">⏭️ Próxima</button>
 
-  <h2>Qual o nome da música?</h2>
-  <div id="opcoes"></div>
-  <p id="resultado"></p>
+<h2>Qual o nome da música?</h2>
+<input type="text" id="resposta" placeholder="Digite o nome da música" />
+<button id="verificar">Verificar</button>
+<p id="resultado"></p>
 
   <script src="https://sdk.scdn.co/spotify-player.js"></script>
   <script src="script.js"></script>

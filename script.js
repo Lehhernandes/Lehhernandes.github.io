@@ -1,9 +1,11 @@
-const token = 'BQBqgzzxdMnDHXvARScdQYKVPA-WFHNpX9cKxFITx8pVlFPo2GptNKZbeWxY_lc-_A8u7pWVuCPh2KRiAhfloVaGKXlmEIuhj4J6MNcfAwK-W0g26WmJG2IE5izxUWRuG2i9AS2iGIiOXuFpOdmWXysgctE8E3YJ58wYIXNv3uVSC4v7_NlUfb3BM0zKGYlWCwNgaPeIP2gIkjUn4CGfVxBgVSZzh16lS0IeHvCfGrsWeq_XPA'; // precisa ser gerado com OAuth (com permissão streaming)
+const token = 'BQCalKwLvf5W8efFS7medO1pPm-bYPIpkLaLfxpM7MMQ6HeQhAfCFUDCsYs8wxBzLplOBNU7uIt3m_x4StyhhecgjyIdep7IYCn5hJmhJkFVSxfzJ7H5ajI61kYF8zASzSEeYqZv89iRH5U2bYfhhXwrMNQQYJbbJxhMGXRPLWBL_JWW9JAZ05Hfgpg3SEqLd3S-WAzmL0ITADVQfIpzbk9FgTwlfEi0pMWrn5-95qvTqzefVQ'; // precisa ser gerado com OAuth (com permissão streaming)
 let player;
 let deviceId = null;
 let currentTrackIndex = 0;
 let tracks = [];
-const playlistId = '37i9dQZF1DXc5EXfkDXlmk';
+let nomeMusicaAtual = '';
+let pontos = 0;
+const playlistId = '65fQX3Uz8gPC9mQYdwXNzg';
 
 window.onSpotifyWebPlaybackSDKReady = () => {
   player = new Spotify.Player({
@@ -18,10 +20,10 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     carregarPlaylist();
   });
 
-  player.addListener('initialization_error', ({ message }) => { console.error(message); });
-  player.addListener('authentication_error', ({ message }) => { console.error(message); });
-  player.addListener('account_error', ({ message }) => { console.error(message); });
-  player.addListener('not_ready', ({ device_id }) => { console.warn('Dispositivo desconectado:', device_id); });
+  player.addListener('initialization_error', ({ message }) => console.error(message));
+  player.addListener('authentication_error', ({ message }) => console.error(message));
+  player.addListener('account_error', ({ message }) => console.error(message));
+  player.addListener('not_ready', ({ device_id }) => console.warn('Dispositivo desconectado:', device_id));
 
   player.connect();
 
@@ -43,7 +45,29 @@ window.onSpotifyWebPlaybackSDKReady = () => {
       tocarMusicaAtual();
     }
   };
+
+
+  document.getElementById('verificar').onclick = () => {
+    const resposta = normalizarTexto(document.getElementById('resposta').value);
+    const nomeCorreto = normalizarTexto(tracks[currentTrackIndex].name);
+    const resultado = document.getElementById('resultado');
+
+    if (resposta === nomeCorreto){
+      pontos++;
+      resultado.textContent = '✅ Acertou!';
+      atualizarPontuacao();
+    } else {
+      resultado.textContent = `❌ Errou! A música correta é: "${nomeCorreto}"`;
+    }
+
+  document.getElementById('resposta').value = '';
+  };
 };
+function atualizarPontuacao() {
+  const pontuacao = document.getElementById('pontuacao');
+  pontuacao.textContent = `Acertos: ${pontos}/${tracks.length} ponto${pontos !== 1 ? 's' : ''}`;
+}
+
 
 async function carregarPlaylist() {
   const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50`, {
@@ -51,7 +75,6 @@ async function carregarPlaylist() {
   });
 
   const data = await response.json();
-
   if (!data.items) {
     console.error('Não conseguiu carregar as faixas da playlist');
     return;
@@ -63,18 +86,14 @@ async function carregarPlaylist() {
   }));
 
   tocarMusicaAtual();
+  atualizarPontuacao();
+
 }
 
 function tocarMusicaAtual() {
-  if (!deviceId) {
-    console.warn('Device ID não disponível ainda.');
-    return;
-  }
+  if (!deviceId || tracks.length === 0 || currentTrackIndex >= tracks.length) return;
 
-  if (tracks.length === 0 || currentTrackIndex >= tracks.length) {
-    console.warn('🎶 Fim da playlist ou nenhuma faixa.');
-    return;
-  }
+  nomeMusicaAtual = tracks[currentTrackIndex].name.toLowerCase();
 
   fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
     method: 'PUT',
@@ -88,62 +107,16 @@ function tocarMusicaAtual() {
       position_ms: 0
     })
   }).then(() => {
-    mostrarOpcoes();
-    limparResultado();
+    document.getElementById('resultado').textContent = '';
   }).catch(e => {
     console.error('Erro ao tocar música:', e);
   });
 }
-
-function gerarOpcoesMusicas() {
-  if (tracks.length === 0 || currentTrackIndex >= tracks.length) return [];
-
-  const nomeCorreto = tracks[currentTrackIndex].name;
-
-  const todosNomes = new Set(tracks.map(t => t.name));
-  todosNomes.delete(nomeCorreto);
-
-  const nomesErrados = Array.from(todosNomes);
-  const opcoesErradas = [];
-
-  while (opcoesErradas.length < 3 && nomesErrados.length > 0) {
-    const idx = Math.floor(Math.random() * nomesErrados.length);
-    opcoesErradas.push(nomesErrados.splice(idx, 1)[0]);
-  }
-
-  const opcoes = [...opcoesErradas, nomeCorreto];
-  return opcoes.sort(() => Math.random() - 0.5);
-}
-
-function mostrarOpcoes() {
-  const divOpcoes = document.getElementById('opcoes');
-  divOpcoes.innerHTML = '';
-
-  const opcoes = gerarOpcoesMusicas();
-  if (opcoes.length === 0) {
-    divOpcoes.textContent = 'Nenhuma opção disponível.';
-    return;
-  }
-
-  opcoes.forEach(opcao => {
-    const btn = document.createElement('button');
-    btn.textContent = opcao;
-    btn.onclick = () => verificarResposta(opcao);
-    divOpcoes.appendChild(btn);
-  });
-}
-
-function verificarResposta(escolha) {
-  const nomeCorreto = tracks[currentTrackIndex].name;
-  const resultado = document.getElementById('resultado');
-
-  if (escolha === nomeCorreto) {
-    resultado.textContent = '✅ Acertou!';
-  } else {
-    resultado.textContent = `❌ Errou! A música correta é: "${nomeCorreto}"`;
-  }
-}
-
-function limparResultado() {
-  document.getElementById('resultado').textContent = '';
+function normalizarTexto(texto) {
+  return texto
+    .toLowerCase()
+    .replace(/\(.*?\)/g, '') // remove qualquer coisa entre parênteses
+    .replace(/ao vivo|live|versão acústica|acústico|remasterizado/gi, '') // remove termos comuns
+    .replace(/[^\w\s]/gi, '') // remove pontuações
+    .trim();
 }
