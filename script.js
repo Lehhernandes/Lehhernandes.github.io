@@ -28,6 +28,11 @@ function criarPergunta(musica, opcoes) {
   const audio = document.getElementById("audioPlayer");
   audio.src = musica.preview_url;
 
+  const playButton = document.getElementById("playButton");
+  playButton.onclick = () => {
+    audio.play();
+  };
+
   const div = document.getElementById("opcoes");
   div.innerHTML = '';
 
