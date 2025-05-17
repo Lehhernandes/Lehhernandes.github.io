@@ -1,20 +1,28 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Toca Aí 🎵</title>
+  <meta charset="UTF-8" />
+  <title>Toca Aí 🎧</title>
   <style>
-    body { font-family: Arial; padding: 20px; }
-    button { margin: 5px; padding: 10px; }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    button { padding: 10px 15px; margin: 10px; cursor: pointer; }
+    #opcoes button { display: block; margin: 5px 0; }
   </style>
 </head>
 <body>
-  <h1>Adivinhe a Música</h1>
-  <audio id="audioPlayer" controls></audio>
-  <button id="playButton">▶️ Tocar</button>
+  <h1>Toca Aí 🎶</h1>
+  <p>Escute o trecho e adivinhe o nome da música!</p>
+
+  <button id="play">▶️ Play</button>
+  <button id="pause">⏸️ Pause</button>
+  <button id="previous">⏮️ Anterior</button>
+  <button id="next">⏭️ Próxima</button>
+
+  <h2>Qual o nome da música?</h2>
   <div id="opcoes"></div>
   <p id="resultado"></p>
 
+  <script src="https://sdk.scdn.co/spotify-player.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
