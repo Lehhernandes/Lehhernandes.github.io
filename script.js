@@ -1,10 +1,11 @@
-const token = 'BQCo6lsOvV2sBvF644mfkIVZ-Cj9unaZIxcxj3I1wpFD4yL0aGeFmf5g7z-_4C8djh2UjB7vODN9R0say1VNGmpfYWV1X1pyRUzq8m6OExNGmeXZOEvL3dkScIDgof0esawuGhUwtehUWNY7sdt_gl0V1LvGYEP9vVBJvFZCOb3BAyzAXMCzxb6r2ZC4JGQPsABshED6bu3G-a_KMGR9mSrRvPYmI6yx-jJqocIUoOUdFPreCw'; // precisa ser gerado com OAuth (com permissão streaming)
+const token = 'BQA6QXfjem41ZUBNgJDRJk3g6DOpMCitLsbYmPRQJUzhhH_PuM03bOZEKbrW9V3LqaF4sJu_-7Ljx_oPsRNRxbtvnqJRIdHRX_EOzfLgbcZ5qXzeU-QICH-N478oIvkugQZppw3jFKQ5ARDO-IxdvOspf3XFowKFWLyFEDMHS421ccoGmcFxKp9AUjxLkkcV64THopdy5onf018V6cK0Ga_sJdVpmEEUwJkHQpHzylY8vN1BJg'; // precisa ser gerado com OAuth (com permissão streaming)
 let player;
 let deviceId = null;
 let tracks = [];
 let nomeMusicaAtual = '';
 let pontos = parseInt(localStorage.getItem('pontos')) || 0;
 let currentTrackIndex = parseInt(localStorage.getItem('currentTrackIndex')) || 0;
+let erros = 0;
 const playlistId = '65fQX3Uz8gPC9mQYdwXNzg';
 
 window.onSpotifyWebPlaybackSDKReady = () => {
@@ -19,10 +20,9 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     deviceId = device_id;
     carregarPlaylist();
   });
-  function salvarEstado() {
-  localStorage.setItem('pontos', pontos);
-  localStorage.setItem('currentTrackIndex', currentTrackIndex);
-}
+
+
+
 
   player.addListener('initialization_error', ({ message }) => console.error(message));
   player.addListener('authentication_error', ({ message }) => console.error(message));
@@ -34,7 +34,6 @@ window.onSpotifyWebPlaybackSDKReady = () => {
   document.getElementById('reiniciar').onclick = () => {
   currentTrackIndex = 0;
   pontos = 0;
-  salvarEstado();
   atualizarPontuacao();
   tocarMusicaAtual();
   document.getElementById('resultado').textContent = '';
@@ -49,7 +48,6 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     if (currentTrackIndex < tracks.length - 1) {
     currentTrackIndex++;
     tocarMusicaAtual();
-    salvarEstado();
     } else {
       alert(`🏁 Fim da playlist!\nVocê acertou ${pontos} de ${tracks.length} músicas!`);
     }
@@ -59,7 +57,6 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     if (currentTrackIndex > 0) {
       currentTrackIndex--;
       tocarMusicaAtual();
-      salvarEstado();
     }
   };
 
@@ -73,9 +70,10 @@ window.onSpotifyWebPlaybackSDKReady = () => {
       pontos++;
       resultado.textContent = '✅ Acertou!';
       atualizarPontuacao();
-      salvarEstado();
     } else {
-      resultado.textContent = `❌ Errou! A música correta é: "${nomeCorreto}"`;
+      erros++;
+      resultado.textContent = `❌ Errou! A música correta era: "${tracks[currentTrackIndex].name}"`;
+      atualizarPontuacao();
     }
 
   document.getElementById('resposta').value = '';
@@ -83,8 +81,14 @@ window.onSpotifyWebPlaybackSDKReady = () => {
 };
 function atualizarPontuacao() {
   const pontuacao = document.getElementById('pontuacao');
-  pontuacao.textContent = `Acertos: ${pontos}/${tracks.length} ponto${pontos !== 1 ? 's' : ''}`;
+  pontuacao.textContent = `Acertos: ${pontos}/${tracks.length} ponto${pontos !== 1 ? 's' : ''}| Erros: ${erros}`;
   localStorage.setItem('pontos', pontos);
+}
+function embaralharArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
 }
 
 
@@ -99,15 +103,17 @@ async function carregarPlaylist() {
     return;
   }
 
-  tracks = data.items.map(item => ({
+  tracks = data.items
+  .filter(item => item.track && item.track.uri)
+  .map(item => ({
     uri: item.track.uri,
     name: item.track.name
   }));
 
+  embaralharArray(tracks);
+  console.log('🎵 Ordem embaralhada:', tracks.map(t => t.name));
   tocarMusicaAtual();
   atualizarPontuacao();
-  salvarEstado();
-
 }
 
 function tocarMusicaAtual() {
@@ -122,8 +128,7 @@ function tocarMusicaAtual() {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      context_uri: `spotify:playlist:${playlistId}`,
-      offset: { position: currentTrackIndex },
+      uris: [tracks[currentTrackIndex].uri], // tocando apenas essa música
       position_ms: 0
     })
   }).then(() => {
@@ -132,6 +137,7 @@ function tocarMusicaAtual() {
     console.error('Erro ao tocar música:', e);
   });
 }
+
 function normalizarTexto(texto) {
   return texto
     .toLowerCase()

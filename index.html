@@ -7,8 +7,8 @@
   #play {
   background: url("imagens/play2.png" ) no-repeat center center;
   background-size: contain;
-  width: 35px;
-  height: 35px;
+  width: 38px;
+  height: 38px;
   border: none;
   cursor: pointer;
   text-indent: -9999px; /* Esconde texto */
@@ -49,7 +49,7 @@
   cursor: pointer;
   text-indent: -9999px; /* Esconde texto */
 }
-#certo {
+#verificar {
   background: url("imagens/certo.png" ) no-repeat center center;
   background-size: contain;
   width: 35px;
@@ -102,7 +102,7 @@
 <body>
   <h1>Toca Aí 🎶</h1>
   <p>Escute o trecho e adivinhe o nome da música!</p>
-  <p id="pontuacao">Acertos: 0/0 pontos</p>
+  <p id="pontuacao">Acertos: 0/0 pontos | Erros: 0</p>
   <button id="previous">Voltar</button>
   <button id="play">Play</button>
   <button id="pause">Pause</button>
@@ -111,7 +111,7 @@
 
 <h2>Qual o nome da música?</h2>
 <input type="text" id="resposta" placeholder="Digite o nome da música" />
-<button id="certo">Verificar</button>
+<button id="verificar">Verificar</button>
 <p id="resultado"></p>
 
   <script src="https://sdk.scdn.co/spotify-player.js"></script>
