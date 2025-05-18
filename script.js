@@ -1,10 +1,10 @@
 const token = 'BQCalKwLvf5W8efFS7medO1pPm-bYPIpkLaLfxpM7MMQ6HeQhAfCFUDCsYs8wxBzLplOBNU7uIt3m_x4StyhhecgjyIdep7IYCn5hJmhJkFVSxfzJ7H5ajI61kYF8zASzSEeYqZv89iRH5U2bYfhhXwrMNQQYJbbJxhMGXRPLWBL_JWW9JAZ05Hfgpg3SEqLd3S-WAzmL0ITADVQfIpzbk9FgTwlfEi0pMWrn5-95qvTqzefVQ'; // precisa ser gerado com OAuth (com permissão streaming)
 let player;
 let deviceId = null;
-let currentTrackIndex = 0;
 let tracks = [];
 let nomeMusicaAtual = '';
-let pontos = 0;
+let pontos = parseInt(localStorage.getItem('pontos')) || 0;
+let currentTrackIndex = parseInt(localStorage.getItem('currentTrackIndex')) || 0;
 const playlistId = '65fQX3Uz8gPC9mQYdwXNzg';
 
 window.onSpotifyWebPlaybackSDKReady = () => {
@@ -19,6 +19,10 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     deviceId = device_id;
     carregarPlaylist();
   });
+  function salvarEstado() {
+  localStorage.setItem('pontos', pontos);
+  localStorage.setItem('currentTrackIndex', currentTrackIndex);
+}
 
   player.addListener('initialization_error', ({ message }) => console.error(message));
   player.addListener('authentication_error', ({ message }) => console.error(message));
@@ -27,15 +31,27 @@ window.onSpotifyWebPlaybackSDKReady = () => {
 
   player.connect();
 
+  document.getElementById('reiniciar').onclick = () => {
+  currentTrackIndex = 0;
+  pontos = 0;
+  salvarEstado();
+  atualizarPontuacao();
+  tocarMusicaAtual();
+  document.getElementById('resultado').textContent = '';
+  document.getElementById('resposta').value = '';
+  localStorage.removeItem('pontos');
+};
+
   document.getElementById('play').onclick = () => player.resume();
   document.getElementById('pause').onclick = () => player.pause();
 
   document.getElementById('next').onclick = () => {
     if (currentTrackIndex < tracks.length - 1) {
-      currentTrackIndex++;
-      tocarMusicaAtual();
+    currentTrackIndex++;
+    tocarMusicaAtual();
+    salvarEstado();
     } else {
-      alert('🚫 Última faixa da playlist.');
+      alert(`🏁 Fim da playlist!\nVocê acertou ${pontos} de ${tracks.length} músicas!`);
     }
   };
 
@@ -43,6 +59,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     if (currentTrackIndex > 0) {
       currentTrackIndex--;
       tocarMusicaAtual();
+      salvarEstado();
     }
   };
 
@@ -56,6 +73,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
       pontos++;
       resultado.textContent = '✅ Acertou!';
       atualizarPontuacao();
+      salvarEstado();
     } else {
       resultado.textContent = `❌ Errou! A música correta é: "${nomeCorreto}"`;
     }
@@ -66,11 +84,12 @@ window.onSpotifyWebPlaybackSDKReady = () => {
 function atualizarPontuacao() {
   const pontuacao = document.getElementById('pontuacao');
   pontuacao.textContent = `Acertos: ${pontos}/${tracks.length} ponto${pontos !== 1 ? 's' : ''}`;
+  localStorage.setItem('pontos', pontos);
 }
 
 
 async function carregarPlaylist() {
-  const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50`, {
+  const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
     headers: { 'Authorization': `Bearer ${token}` }
   });
 
@@ -87,6 +106,7 @@ async function carregarPlaylist() {
 
   tocarMusicaAtual();
   atualizarPontuacao();
+  salvarEstado();
 
 }
 

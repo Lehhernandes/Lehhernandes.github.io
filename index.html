@@ -4,10 +4,46 @@
   <meta charset="UTF-8" />
   <title>Toca Aí 🎧</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    button { padding: 10px 15px; margin: 10px; cursor: pointer; }
-    #opcoes button { display: block; margin: 5px 0; }
-  </style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    max-width: 600px;
+    margin: auto;
+  }
+
+  button {
+    padding: 10px 15px;
+    margin: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    width: auto;
+  }
+
+  #opcoes button {
+    display: block;
+    margin: 5px 0;
+    width: 100%;
+    font-size: 16px;
+  }
+
+  @media (max-width: 480px) {
+    body {
+      padding: 10px;
+    }
+
+    button {
+      padding: 12px;
+      margin: 8px 0;
+      font-size: 18px;
+      width: 100%;
+    }
+
+    #opcoes button {
+      font-size: 18px;
+    }
+  }
+</style>
+
 </head>
 <body>
   <h1>Toca Aí 🎶</h1>
@@ -18,6 +54,7 @@
   <button id="pause">⏸️ Pause</button>
   <button id="previous">⏮️ Anterior</button>
   <button id="next">⏭️ Próxima</button>
+  <button id="reiniciar">🔁 Reiniciar Jogo</button>
 
 <h2>Qual o nome da música?</h2>
 <input type="text" id="resposta" placeholder="Digite o nome da música" />
