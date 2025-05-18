@@ -3,8 +3,8 @@ let player;
 let deviceId = null;
 let tracks = [];
 let nomeMusicaAtual = '';
-let pontos = parseInt(localStorage.getItem('pontos')) || 0;
-let currentTrackIndex = parseInt(localStorage.getItem('currentTrackIndex')) || 0;
+let pontos = 0;
+let currentTrackIndex = 0;
 let erros = 0;
 const playlistId = '65fQX3Uz8gPC9mQYdwXNzg';
 
@@ -34,12 +34,14 @@ window.onSpotifyWebPlaybackSDKReady = () => {
   document.getElementById('reiniciar').onclick = () => {
   currentTrackIndex = 0;
   pontos = 0;
+  erros = 0;
+  tracks = embaralharArray(tracks); // reembaralha a ordem
   atualizarPontuacao();
   tocarMusicaAtual();
   document.getElementById('resultado').textContent = '';
   document.getElementById('resposta').value = '';
-  localStorage.removeItem('pontos');
 };
+
 
   document.getElementById('play').onclick = () => player.resume();
   document.getElementById('pause').onclick = () => player.pause();
@@ -49,7 +51,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     currentTrackIndex++;
     tocarMusicaAtual();
     } else {
-      alert(`🏁 Fim da playlist!\nVocê acertou ${pontos} de ${tracks.length} músicas!`);
+      alert(`🏁 Fim da playlist!\nVocê acertou ${pontos} de ${tracks.length} músicas!\nErros: ${erros}`);
     }
   };
 
@@ -77,18 +79,19 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     }
 
   document.getElementById('resposta').value = '';
+  document.getElementById('resposta').focus();
   };
 };
 function atualizarPontuacao() {
   const pontuacao = document.getElementById('pontuacao');
   pontuacao.textContent = `Acertos: ${pontos}/${tracks.length} ponto${pontos !== 1 ? 's' : ''}| Erros: ${erros}`;
-  localStorage.setItem('pontos', pontos);
 }
 function embaralharArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
   }
+  return array;
 }
 
 
@@ -110,7 +113,7 @@ async function carregarPlaylist() {
     name: item.track.name
   }));
 
-  embaralharArray(tracks);
+  tracks = embaralharArray(tracks);
   console.log('🎵 Ordem embaralhada:', tracks.map(t => t.name));
   tocarMusicaAtual();
   atualizarPontuacao();
