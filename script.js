@@ -1,4 +1,4 @@
-const token = 'BQA8Ak4OvdRVTdo8vmcS_jhuU_9Z5cqNADatPmQGhYNMeKxMu6hWuKuVkIYzcJuw0bcgIst7CW-c4FWQPp4St5p5h8m4ur8Yyln9HuGylq2BTwUc3OD4f5-TozS8zAscAtYautLSGwGhZdc4v3Zg2rVMy-UDHvSXZmqjlkpcQL1UAsdZH2cbb5CjYaObGP3gPH7xvnrjjUlk27vcT6rrFmNPFPeOefH8sSv_h2KO9XklLo4Zfg'; // precisa ser gerado com OAuth (com permissão streaming)
+const token = 'BQCHGlgmg6pBHLTM8_M3BoQtgKqEvb74xT_g1w3n34Zo2TlkiyUF70rIfc_iHb5NW6SVr9THaVBFwXn3Tb9rAF2dkKnYefEkeHjmekztXSF_tL6pblm4YgvFH_RVptP_QPCsYqYHD9-OqSbX_okpyRJoYsJYbXXSvsI7sqgkkk7u_S05a4UM4G_cda9RFSC2szo0a-CdbgXuhsu--ZLSYZM1VzD7-wLYd1aoMIr42fWCZd-G0w'; // precisa ser gerado com OAuth (com permissão streaming)
 let player;
 let deviceId = null;
 let tracks = [];
