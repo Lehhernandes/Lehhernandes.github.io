@@ -1,4 +1,4 @@
-const token = 'BQDwXGxFBXMtI3V3oi1rBLqWI2VZAkjkO--1XRqiGDs1oAdzwnDLxwekWcDQRfhKJd2Xgh7Obyg4gu7ASw63hQn7O3FTbOI0PfUq90dGfbiYDtUC53aI6pbUTOC7jalcFpuQ6SNJwPDWWJnn5t-Z7OH6CWmBZJmci9zzST6-Z-7x5Z8_cJfHKXzwbM1b6YRxhyCl5PIk7WMdP9Y_5LdZpky9n7BiQhL8LY3Tqmd8L1TlQlDw0Q'; // precisa ser gerado com OAuth (com permissão streaming)
+const token = 'BQBpi5qisAG2PmdrvLBphP4D8qNLdTZdVprVFzHN4CO5YaPqaaNfFmp-JGNEd1gYRjxzCn0SGr6SS-x-3fGZui1h2zCNcGBeeIyE4O9Wm7hB1IgWgkRphon-DDgxTGs4cR8NE1Am4hIGgotGJUkoM-ChA2UaIRiMxFwwAcbN2ykrtdQJRAx5a2hkRRgvRkiPndeetlDomdtgA_u5Ichz4fwXJoPtyVt7nIposPwE26yCggWsSg'; // precisa ser gerado com OAuth (com permissão streaming)
 let player;
 let deviceId = null;
 let tracks = [];
@@ -6,6 +6,7 @@ let nomeMusicaAtual = '';
 let pontos = 0;
 let currentTrackIndex = 0;
 let erros = 0;
+let resultados = []; // vai armazenar { nome: 'Nome da música', resultado: 'acertou' ou 'errou' }
 const playlistId = '65fQX3Uz8gPC9mQYdwXNzg';
 
 window.onSpotifyWebPlaybackSDKReady = () => {
@@ -22,8 +23,6 @@ window.onSpotifyWebPlaybackSDKReady = () => {
   });
 
 
-
-
   player.addListener('initialization_error', ({ message }) => console.error(message));
   player.addListener('authentication_error', ({ message }) => console.error(message));
   player.addListener('account_error', ({ message }) => console.error(message));
@@ -31,15 +30,82 @@ window.onSpotifyWebPlaybackSDKReady = () => {
 
   player.connect();
 
-  document.getElementById('reiniciar').onclick = () => {
+};
+
+function atualizarPontuacao() {
+  const pontuacao = document.getElementById('pontuacao');
+  pontuacao.textContent = `Acertos: ${pontos}/${tracks.length} ponto${pontos !== 1 ? 's' : ''} | Erros: ${erros}`;
+}
+function embaralharArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+
+async function carregarPlaylist() {
+  const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+
+  const data = await response.json();
+  if (!data.items) {
+    console.error('Não conseguiu carregar as faixas da playlist');
+    return;
+  }
+
+  tracks = data.items
+  .filter(item => item.track && item.track.uri)
+  .map(item => ({
+    uri: item.track.uri,
+    name: item.track.name
+  }));
+
+  tracks = embaralharArray(tracks);
+  console.log('🎵 Ordem embaralhada:', tracks.map(t => t.name));
+  tocarMusicaAtual();
+  atualizarPontuacao();
+}
+function iniciarCronometro(duracaoSegundos, elemento) {
+  let tempoRestante = duracaoSegundos;
+
+  function atualizar() {
+    const minutos = Math.floor(tempoRestante / 60);
+    const segundos = tempoRestante % 60;
+    elemento.textContent = `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+
+    if (tempoRestante > 0) {
+      tempoRestante--;
+      setTimeout(atualizar, 1000);
+    } else {
+      elemento.textContent = '00:00';
+      alert('⏰ Tempo esgotado!');
+    }
+  }
+
+  atualizar();
+}
+
+window.addEventListener('load', () => {
+  const elementoCronometro = document.getElementById('cronometro');
+  iniciarCronometro(60 * 60, elementoCronometro); // 1 hora
+      document.getElementById('reiniciar').onclick = () => {
   currentTrackIndex = 0;
   pontos = 0;
   erros = 0;
   tracks = embaralharArray(tracks); // reembaralha a ordem
   atualizarPontuacao();
   tocarMusicaAtual();
-  document.getElementById('resultado').textContent = '';
   document.getElementById('resposta').value = '';
+  document.getElementById('resposta').focus();
+  document.getElementById('resultado').textContent = '';
+  document.getElementById('listaResultados').innerHTML = '';
+  document.getElementById('listaResultados').style.display = 'none';
+  resultados = [];
+
+
 };
 
 
@@ -77,47 +143,16 @@ window.onSpotifyWebPlaybackSDKReady = () => {
       resultado.textContent = `❌ Errou! A música correta era: "${tracks[currentTrackIndex].name}"`;
       atualizarPontuacao();
     }
+    resultados.push({
+      nome: tracks[currentTrackIndex].name,
+      resultado: resposta === nomeCorreto ? 'acertou' : 'errou'
+    });
+
 
   document.getElementById('resposta').value = '';
   document.getElementById('resposta').focus();
   };
-};
-function atualizarPontuacao() {
-  const pontuacao = document.getElementById('pontuacao');
-  pontuacao.textContent = `Acertos: ${pontos}/${tracks.length} ponto${pontos !== 1 ? 's' : ''} | Erros: ${erros}`;
-}
-function embaralharArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
-
-
-async function carregarPlaylist() {
-  const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
-
-  const data = await response.json();
-  if (!data.items) {
-    console.error('Não conseguiu carregar as faixas da playlist');
-    return;
-  }
-
-  tracks = data.items
-  .filter(item => item.track && item.track.uri)
-  .map(item => ({
-    uri: item.track.uri,
-    name: item.track.name
-  }));
-
-  tracks = embaralharArray(tracks);
-  console.log('🎵 Ordem embaralhada:', tracks.map(t => t.name));
-  tocarMusicaAtual();
-  atualizarPontuacao();
-}
+});
 
 function tocarMusicaAtual() {
   if (!deviceId || tracks.length === 0 || currentTrackIndex >= tracks.length) return;
@@ -149,3 +184,16 @@ function normalizarTexto(texto) {
     .replace(/[^\w\s]/gi, '') // remove pontuações
     .trim();
 }
+document.getElementById('mostrarResultados').onclick = () => {
+  const lista = document.getElementById('listaResultados');
+  if (lista.style.display === 'none') {
+    lista.innerHTML = resultados.map(r => {
+      const emoji = r.resultado.toLowerCase() === 'acertou' ? '✅' : '❌';
+      return `<p>${emoji} ${r.nome} — ${r.resultado[0].toUpperCase() + r.resultado.slice(1)}</p>`;
+    }).join('');
+    lista.style.display = 'block';
+  } else {
+    lista.style.display = 'none';
+  }
+};
+
