@@ -1,4 +1,4 @@
-const token = 'BQCHGlgmg6pBHLTM8_M3BoQtgKqEvb74xT_g1w3n34Zo2TlkiyUF70rIfc_iHb5NW6SVr9THaVBFwXn3Tb9rAF2dkKnYefEkeHjmekztXSF_tL6pblm4YgvFH_RVptP_QPCsYqYHD9-OqSbX_okpyRJoYsJYbXXSvsI7sqgkkk7u_S05a4UM4G_cda9RFSC2szo0a-CdbgXuhsu--ZLSYZM1VzD7-wLYd1aoMIr42fWCZd-G0w'; // precisa ser gerado com OAuth (com permissão streaming)
+const token = 'BQDwXGxFBXMtI3V3oi1rBLqWI2VZAkjkO--1XRqiGDs1oAdzwnDLxwekWcDQRfhKJd2Xgh7Obyg4gu7ASw63hQn7O3FTbOI0PfUq90dGfbiYDtUC53aI6pbUTOC7jalcFpuQ6SNJwPDWWJnn5t-Z7OH6CWmBZJmci9zzST6-Z-7x5Z8_cJfHKXzwbM1b6YRxhyCl5PIk7WMdP9Y_5LdZpky9n7BiQhL8LY3Tqmd8L1TlQlDw0Q'; // precisa ser gerado com OAuth (com permissão streaming)
 let player;
 let deviceId = null;
 let tracks = [];
@@ -84,7 +84,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
 };
 function atualizarPontuacao() {
   const pontuacao = document.getElementById('pontuacao');
-  pontuacao.textContent = `Acertos: ${pontos}/${tracks.length} ponto${pontos !== 1 ? 's' : ''}| Erros: ${erros}`;
+  pontuacao.textContent = `Acertos: ${pontos}/${tracks.length} ponto${pontos !== 1 ? 's' : ''} | Erros: ${erros}`;
 }
 function embaralharArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
